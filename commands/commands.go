@@ -12,6 +12,11 @@ var FlutterPubDependencies = Command{
 	Args: []string{"pub", "deps", "--style=compact"},
 }
 
+var FlutterVersion = Command{
+	Name: "flutter",
+	Args: []string{"--version"},
+}
+
 // / Get patrol verbose with extra information
 var PatrolDoctor = Command{
 	Name: "patrol",
