@@ -14,6 +14,7 @@ type BuildParameters struct {
 	ExcludedTags string
 	IsVerbose    string
 	IsCoverage   string
+	FilePath     string
 }
 
 // NewBuildParameters builds a BuildParameters struct from a map of environment variables.
@@ -24,6 +25,7 @@ func NewBuildParameters(envMap map[string]string) (*BuildParameters, error) {
 		"platform":  SetPlatform,
 		"target":    SetTarget,
 		"buildType": SetBuildType,
+		"filePath":  SetFilePath,
 	}
 
 	optionalFields := map[string]func(*BuildParameters, string) error{
@@ -60,7 +62,10 @@ func NewBuildParameters(envMap map[string]string) (*BuildParameters, error) {
 func (bp *BuildParameters) Command() []string {
 	var args []string
 
-	args = append(args, "--target", bp.Target)
+	if bp.FilePath != "" {
+		args = append(args, "--target ", bp.FilePath)
+	}
+
 	args = append(args, "--"+bp.BuildType)
 
 	if bp.Tags != "" {
@@ -83,7 +88,7 @@ func (bp *BuildParameters) Command() []string {
 		}
 	}
 
-	var command = "patrol build " + bp.Platform + " " + strings.Join(args, " ")
+	var command = "patrol build " + bp.Target + " " + strings.Join(args, " ")
 
 	return []string{
 		command,

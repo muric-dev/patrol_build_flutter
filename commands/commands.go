@@ -24,6 +24,21 @@ var PatrolInstall = Command{
 	Args: []string{"pub", "global", "activate", "patrol_cli"},
 }
 
+var CreatePatrolFolder = Command{
+	Name: "mkdir",
+	Args: []string{"patrol"},
+}
+
+var CopyBuildsToFolder = Command{
+	Name: "cp",
+	Args: []string{},
+}
+
+var CompressIOSFiles = Command{
+	Name: "zip",
+	Args: []string{"-r", "patrol/ios_tests.zip"},
+}
+
 func (c Command) CopyWith(name *string, args []string) Command {
 	copy := c
 

@@ -15,6 +15,13 @@ app:
   - FLUTTER_BUILD_PATROL_EXCLUDED_TAGS: null
   - FLUTTER_BUILD_PATROL_IS_VERBOSE: true
   - FLUTTER_BUILD_PATROL_IS_COVERED: false
+  - TARGET_DIRECTORY_PATH: null
+
+  # Exports
+  - PATROL_APK_PATH: build/app/outputs/apk/debug/app-debug.apk
+  - TEST_APK_PATH: build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+  - IOS_TESTS_PATH: build/ios_integ/Build/Products/ios_tests.zip
+  - TEST_COVERAGE_ICOV_PATH: coverage/Icov.info
 
 workflows:
   test:

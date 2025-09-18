@@ -17,7 +17,7 @@ func SetPlatform(bp *BuildParameters, value string) error {
 		bp.Platform = value
 		return nil
 	default:
-		return errors.New("invalid platform: expected 'android', 'iOS' or 'both'")
+		return errors.New("invalid platform: expected 'android', 'ios' or 'both'")
 	}
 }
 
@@ -38,6 +38,14 @@ func SetBuildType(bp *BuildParameters, value string) error {
 	default:
 		return errors.New("invalid build type: expected 'release' or 'simulator'")
 	}
+}
+
+func SetFilePath(bp *BuildParameters, value string) error {
+	if strings.TrimSpace(value) == "" {
+		return errors.New("filePath cannot be empty")
+	}
+	bp.FilePath = value
+	return nil
 }
 
 func SetTags(bp *BuildParameters, value string) error {

@@ -9,4 +9,5 @@ const (
 	ExcludedTags = "FLUTTER_BUILD_PATROL_EXCLUDED_TAGS" // optional, comma-separated
 	IsVerbose    = "FLUTTER_BUILD_PATROL_IS_VERBOSE"
 	IsCovered    = "FLUTTER_BUILD_PATROL_IS_COVERED"
+	FilePath     = "TARGET_DIRECTORY_PATH"
 )

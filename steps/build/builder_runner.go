@@ -16,5 +16,11 @@ func (p *BuilderRunner) BuildParametersFromEnv() ([]string, error) {
 		return []string{}, err
 	}
 
-	return command.Command(), nil
+	finalCommand := command.Command()
+	if finalCommand == nil {
+		print.Error(fmt.Sprintf("Build failed: %s", err))
+		return []string{}, err
+	}
+
+	return finalCommand, nil
 }

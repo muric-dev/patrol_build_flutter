@@ -2,6 +2,7 @@ package main
 
 import (
 	build "patrol_install/steps/build"
+	export "patrol_install/steps/export"
 	install "patrol_install/steps/install"
 	validate "patrol_install/steps/validate"
 	print "patrol_install/utils/print"
@@ -34,6 +35,14 @@ func main() {
 	if buildError != nil {
 		print.Error("❌ Build failed")
 		print.Error(buildError.Error())
+		print.Error("Please check the logs for more details.")
+		return
+	}
+
+	exportError := export.Run(&export.ExporterRunner{})
+	if exportError != nil {
+		print.Error("❌ Export failed")
+		print.Error(exportError.Error())
 		print.Error("Please check the logs for more details.")
 		return
 	}

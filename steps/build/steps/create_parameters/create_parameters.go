@@ -16,6 +16,7 @@ func BuildParametersFromEnv() (*bp.BuildParameters, error) {
 		"excludedTags": os.Getenv(constants.ExcludedTags),
 		"verbose":      os.Getenv(constants.IsVerbose),
 		"isCovered":    os.Getenv(constants.IsCovered),
+		"filePath":     os.Getenv(constants.FilePath),
 	}
 
 	// Final build
