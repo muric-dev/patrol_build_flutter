@@ -1,0 +1,75 @@
+# patrol_build_flutter Test Workflow
+#
+# This workflow runs on pushes and pull requests to the 'main' branch.
+# It ensures code quality and correctness by running lint, vet, dependency checks, and tests with coverage.
+#
+# Steps:
+#   1. Checkout the repository code for analysis and testing.
+#   2. Set up the Go toolchain using the version specified in go.mod.
+#   3. Run golangci-lint for static code analysis.
+#   4. Run go vet to check for suspicious constructs and code correctness.
+#   5. Run go mod tidy to ensure go.mod matches the source code.
+#   6. Run go mod verify to ensure dependencies are correct and present.
+#   7. Run tests and export a test report using robherley/go-test-action.
+#   8. Add a PR comment with the test result badge and report link (on pull requests).
+#   9. Print a workflow summary message at the end.
+#
+# Usage:
+#   - Use this workflow to validate all code changes before merging to main.
+
+name: Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the code for analysis and testing
+      - uses: actions/checkout@v4
+
+      # Set up Go toolchain
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+
+      # Runs golangci-lint for static code analysis
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+
+      # Checks for suspicious constructs and code correctness
+      - name: Vet
+        run: go vet ./...
+
+      # Ensures go.mod matches source code
+      - name: Go Mod Tidy
+        run: go mod tidy
+      # Verifies dependencies are correct and present
+      - name: Go Mod Verify
+        run: go mod verify
+
+      # Uses go-test-action from robherley as exporting test results
+      - name: Test Report
+        uses: robherley/go-test-action@v0.6.0
+        with:
+          omit: untested
+
+      - name: PR Comment
+        if: always() && github.event_name == 'pull_request'
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            ${{ steps.test-report.outcome == 'success' && '![image](https://img.shields.io/badge/testing-success-green)' || '![image](https://img.shields.io/badge/testing-failure-red)' }}
+            
+            **📃 Report**: https://github.com/${{github.repository}}/actions/runs/${{ github.run_id }}
+
+      #  Prints a summary message at the end
+      - name: Workflow Summary
+        run: echo "All checks and tests completed."

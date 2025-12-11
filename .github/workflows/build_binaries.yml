@@ -1,0 +1,60 @@
+# patrol_build_flutter Release Workflow
+#
+# This workflow builds Go binaries for multiple platforms (Linux, macOS, Windows)
+# and creates a GitHub Release with downloadable artifacts.
+#
+# Trigger:
+#   - Runs on every push to a tag matching 'v*' (e.g., v1.0.0).
+
+# Usage:
+#   - Download the built binaries from the GitHub Release or workflow artifacts for use in your CI/CD.
+
+name: Build Binaries
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on tags like v1.0.0
+
+permissions:
+  contents: write # Required to upload binaries to GitHub Releases
+
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the repository code at the commit corresponding to the tag.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Installs the specified Go version for building the project.
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+
+      # Compiles the Go project for Linux, macOS, and Windows, placing the binaries in the 'dist' directory.
+      - name: Build Binaries 🛠️
+        run: |
+          mkdir -p dist
+          # Build the Linux binary
+          GOOS=linux GOARCH=amd64 go build -o dist/patrol-binary-linux
+          # Build the macOS binary
+          GOOS=darwin GOARCH=amd64 go build -o dist/patrol-binary-darwin
+          # Build the Windows binary
+          GOOS=windows GOARCH=amd64 go build -o dist/patrol-binary-windows.exe
+
+      # Uploads the compiled binaries as a workflow artifact for download.
+      - name: Upload Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: patrol-binaries
+          path: dist/
+
+      # Creates a GitHub Release using the generated tag and attaches all binaries from the 'dist' directory.
+      - name: Create GitHub Release and Tag 🚀
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }} # Uses the tag from the push event
+          files: |
+            dist/*

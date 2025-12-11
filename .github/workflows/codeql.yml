@@ -1,0 +1,67 @@
+# patrol_build_flutter CodeQL Security Analysis Workflow
+#
+# This workflow runs on pushes and pull requests to the 'main' branch.
+# It performs static analysis using GitHub CodeQL to detect security vulnerabilities in Go code.
+#
+# Steps:
+#   1. Checkout the repository code.
+#   2. Set up the Go toolchain using go.mod.
+#   3. Verify Go module dependencies.
+#   4. Initialize CodeQL for Go.
+#   5. Autobuild the project for analysis.
+#   6. Perform CodeQL analysis and upload results.
+#
+# Usage:
+#   - Use this workflow to continuously monitor for security issues in your Go codebase.
+
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: 'ubuntu-latest'
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'go']
+
+    steps:
+      # Checks out the code for analysis
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Sets up Go based on the version in go.mod
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+
+      # Verifies dependencies are correct and present
+      - name: Go Mod Verify
+        run: go mod verify
+
+      # Initializes CodeQL for the specified language
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      # Builds the project for CodeQL analysis
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # Runs CodeQL analysis and uploads results
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
