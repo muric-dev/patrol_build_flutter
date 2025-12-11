@@ -9,10 +9,10 @@ import (
 
 type ValidatorRunner struct{}
 
-func (p *ValidatorRunner) GetVersion() (*v.Version, error) {
-	return flutter.GetVersion()
+func (p *ValidatorRunner) GetFlutterVersion() (*v.Version, error) {
+	return flutter.GetFlutterVersion(flutter.FlutterVersionCmd)
 }
 
 func (p *ValidatorRunner) GetPatrolVersion() (*v.Version, error) {
-	return patrol.GetVersion()
+	return patrol.GetPatrolVersion(patrol.FlutterPubDepsCmd)
 }

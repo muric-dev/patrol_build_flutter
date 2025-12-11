@@ -11,7 +11,7 @@ import (
 )
 
 type Validator interface {
-	GetVersion() (*v.Version, error)
+	GetFlutterVersion() (*v.Version, error)
 	GetPatrolVersion() (*v.Version, error)
 }
 
@@ -25,7 +25,7 @@ func Run(params ValidatorRunParams) error {
 
 	print.StepInitiated("--- Getting Flutter Version ---")
 
-	flutterVersion, err := runner.GetVersion()
+	flutterVersion, err := runner.GetFlutterVersion()
 	if err != nil {
 		print.Warning("❌ Failed to get Flutter version")
 		print.Error(err.Error())

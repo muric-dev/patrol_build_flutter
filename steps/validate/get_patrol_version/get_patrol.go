@@ -1,4 +1,4 @@
-package get_flutter_version
+package get_patrol_version
 
 import (
 	"bufio"
@@ -8,18 +8,25 @@ import (
 	v "github.com/Masterminds/semver/v3"
 
 	"patrol_install/commands"
+	commands_utils "patrol_install/commands/utils"
 	"patrol_install/utils/exec"
 )
 
-var flutterPubDeps = commands.FlutterPubDependencies
+var FlutterPubDepsCmd = commands.FlutterPubDependencies
 
-func GetVersion() (*v.Version, error) {
-	output, err := exec.Command(flutterPubDeps)
+func GetPatrolVersion(cmd commands.Command) (*v.Version, error) {
+
+	if !commands_utils.IsSameCommand(cmd, FlutterPubDepsCmd) {
+		return nil, fmt.Errorf("should use FlutterPubDependencies command")
+	}
+
+	// Todo: create execture function that returns the log
+	output, err := exec.Command(cmd)
 	if err != nil {
 		return nil, err
 	}
 
-	version, err := getPatrolVersionFromLog(output)
+	version, err := GetPatrolVersionFromLog(output)
 	if err != nil {
 		return nil, fmt.Errorf("could not find version in output")
 	}
@@ -27,7 +34,7 @@ func GetVersion() (*v.Version, error) {
 	return version, nil
 }
 
-func getPatrolVersionFromLog(log string) (*v.Version, error) {
+func GetPatrolVersionFromLog(log string) (*v.Version, error) {
 	scanner := bufio.NewScanner(strings.NewReader(log))
 	for scanner.Scan() {
 		line := scanner.Text()

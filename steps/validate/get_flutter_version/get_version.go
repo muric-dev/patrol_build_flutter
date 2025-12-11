@@ -11,26 +11,43 @@ import (
 	"patrol_install/utils/exec"
 )
 
-var flutterVersion = commands.FlutterVersion
+var FlutterVersionCmd = commands.FlutterVersion
 
-func GetVersion() (*v.Version, error) {
-	output, err := exec.Command(flutterVersion)
+// CleanVersion receives the command output string and extracts the version substring.
+func CleanVersion(output string) (string, error) {
+	re := regex.Version("Flutter")
+	match := re.FindStringSubmatch(output)
+	if len(match) > 1 {
+		return cleanVersion(match[1]), nil
+	}
+	return "", fmt.Errorf("could not find version in output")
+}
+
+// ParseVersion receives the cleaned version string and parses it into a semver.Version.
+func ParseVersion(versionStr string) (*v.Version, error) {
+	parsedVersion, err := v.NewVersion(versionStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid semantic version: %w", err)
+	}
+	return parsedVersion, nil
+}
+
+func GetFlutterVersion(cmd commands.Command) (*v.Version, error) {
+	output, err := exec.Command(cmd)
 	if err != nil {
 		return nil, err
 	}
 
-	// Use regex to extract the version
-	re := regex.Version("Flutter")
-	match := re.FindStringSubmatch(output)
-	if len(match) > 1 {
-		parsedVersion, err := v.NewVersion(cleanVersion(match[1]))
-		if err != nil {
-			return nil, fmt.Errorf("invalid semantic version: %w", err)
-		}
-		return parsedVersion, nil
+	cleaned, err := CleanVersion(output)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("could not find version in output")
+	parsedVersion, err := ParseVersion(cleaned)
+	if err != nil {
+		return nil, err
+	}
+	return parsedVersion, nil
 }
 
 func cleanVersion(version string) string {

@@ -1,6 +1,6 @@
 package commands
 
-// / This class is used to define the commands that will be executed in the terminal.
+// / This struct is used to define the commands that will be executed in the terminal.
 type Command struct {
 	Name string
 	Args []string
