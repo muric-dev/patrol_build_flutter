@@ -10,7 +10,7 @@ func Version(prefixText string) *regexp.Regexp {
 	return regexp.MustCompile(`(?i)` + escapedPrefix + `[\s:]*v?(\d+\.\d+\.\d+)`)
 }
 
-// AndroidApk returns a regex that matches app-debug.apk and app-*-androidTest.apk
+// AndroidApk returns a regex that matches app-*.apk and app-*-*.apk
 func AndroidApk() *regexp.Regexp {
-	return regexp.MustCompile(`^(app-debug\.apk|app-.*-androidTest\.apk)$`)
+	return regexp.MustCompile(`^app-.*\.apk$`)
 }

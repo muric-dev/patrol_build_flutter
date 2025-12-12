@@ -2,7 +2,7 @@ package main
 
 import (
 	build "patrol_install/steps/build"
-	export "patrol_install/steps/export"
+	export_artifacts "patrol_install/steps/export_artifacts"
 	install_patrol_cli "patrol_install/steps/install_patrol_cli"
 	validate "patrol_install/steps/validate"
 	print "patrol_install/utils/print"
@@ -39,7 +39,7 @@ func main() {
 		return
 	}
 
-	exportError := export.Run(&export.ExporterRunner{})
+	exportError := export_artifacts.Run(&export_artifacts.ExporterRunner{})
 	if exportError != nil {
 		print.Error("❌ Export failed")
 		print.Error(exportError.Error())

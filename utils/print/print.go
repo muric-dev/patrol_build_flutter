@@ -16,7 +16,7 @@ var (
 )
 
 func SetColorsForOS(goos string) {
-	if goos != "windows" {
+	if goos == "windows" {
 		Reset = ""
 		Red = ""
 		Green = ""
