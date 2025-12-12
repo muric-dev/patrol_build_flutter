@@ -8,12 +8,14 @@ import (
 	"patrol_install/commands"
 )
 
-func resetPatrolCLIVersionEnv() {
-	os.Unsetenv("CUSTOM_PATROL_CLI_VERSION")
+func resetPatrolCLIVersionEnv(t *testing.T) {
+	if err := os.Unsetenv("CUSTOM_PATROL_CLI_VERSION"); err != nil {
+		t.Fatalf("failed to unset env: %v", err)
+	}
 }
 
 func TestInstallPatrolCLI_LatestVersion(t *testing.T) {
-	resetPatrolCLIVersionEnv()
+	resetPatrolCLIVersionEnv(t)
 	called := false
 	executor := func(cmd commands.Command) (string, error) {
 		called = true
@@ -23,7 +25,7 @@ func TestInstallPatrolCLI_LatestVersion(t *testing.T) {
 		return "installed latest", nil
 	}
 	output, err := InstallPatrolCLI(executor)
-	resetPatrolCLIVersionEnv()
+	resetPatrolCLIVersionEnv(t)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -36,7 +38,9 @@ func TestInstallPatrolCLI_LatestVersion(t *testing.T) {
 }
 
 func TestInstallPatrolCLI_CustomVersion(t *testing.T) {
-	os.Setenv("CUSTOM_PATROL_CLI_VERSION", "1.2.3")
+	if err := os.Setenv("CUSTOM_PATROL_CLI_VERSION", "1.2.3"); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
 	called := false
 	executor := func(cmd commands.Command) (string, error) {
 		called = true
@@ -46,7 +50,7 @@ func TestInstallPatrolCLI_CustomVersion(t *testing.T) {
 		return "installed custom", nil
 	}
 	output, err := InstallPatrolCLI(executor)
-	resetPatrolCLIVersionEnv()
+	resetPatrolCLIVersionEnv(t)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -59,12 +63,14 @@ func TestInstallPatrolCLI_CustomVersion(t *testing.T) {
 }
 
 func TestInstallPatrolCLI_Error(t *testing.T) {
-	os.Setenv("CUSTOM_PATROL_CLI_VERSION", "")
+	if err := os.Setenv("CUSTOM_PATROL_CLI_VERSION", ""); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
 	executor := func(cmd commands.Command) (string, error) {
 		return "", errors.New("install failed")
 	}
 	output, err := InstallPatrolCLI(executor)
-	resetPatrolCLIVersionEnv()
+	resetPatrolCLIVersionEnv(t)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
