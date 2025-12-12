@@ -15,8 +15,8 @@ var (
 	Cyan   = "\033[36m"
 )
 
-func init() {
-	if runtime.GOOS == "windows" {
+func SetColorsForOS(goos string) {
+	if goos != "windows" {
 		Reset = ""
 		Red = ""
 		Green = ""
@@ -25,6 +25,10 @@ func init() {
 		Purple = ""
 		Cyan = ""
 	}
+}
+
+func init() {
+	SetColorsForOS(runtime.GOOS)
 }
 
 func _printColor(colorCode string, message string) {

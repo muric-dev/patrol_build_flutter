@@ -47,11 +47,26 @@ func Test_GetPatrolVersionFromLog(t *testing.T) {
 			want:    "3.15.1",
 			wantErr: false,
 		},
+		{
+			name:    "Invalid patrol version format",
+			log:     "- patrol b3.v15.1+1 [boolean_selector equatable flutter flutter_test http json_annotation meta patrol_finders patrol_log shelf test_api]",
+			want:    "3.15.1+1",
+			wantErr: true,
+		},
+		{
+			name:    "Valid Semantic version format",
+			log:     "- patrol v3.15.1+1 [boolean_selector equatable flutter flutter_test http json_annotation meta patrol_finders patrol_log shelf test_api]",
+			want:    "3.15.1+1",
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GetPatrolVersionFromLog(tt.log)
+			t.Logf("📝 %s\n  Log: %s\n  Want: %s\n  WantErr: %t\n  Got: %v\n",
+				tt.name, tt.log, tt.want, tt.wantErr, got)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}

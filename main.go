@@ -3,13 +3,13 @@ package main
 import (
 	build "patrol_install/steps/build"
 	export "patrol_install/steps/export"
-	install "patrol_install/steps/install"
+	install_patrol_cli "patrol_install/steps/install_patrol_cli"
 	validate "patrol_install/steps/validate"
 	print "patrol_install/utils/print"
 )
 
 func main() {
-	cliVersion, installError := install.Run(&install.InstallerRunner{})
+	cliVersion, installError := install_patrol_cli.Run(&install_patrol_cli.InstallerRunner{})
 	if installError != nil {
 		print.Error("❌ Setup failed")
 		print.Error(installError.Error())

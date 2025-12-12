@@ -10,23 +10,33 @@ import (
 
 	"patrol_install/commands"
 	regex "patrol_install/constants"
+	build_constants "patrol_install/steps/build/constants"
 	print "patrol_install/utils/print"
 )
 
+var androidApkPath = "build/app/outputs/apk"
+var iosAppPath = "build/ios_integ/Build/Products"
+
 func FindAndExportBuilds() error {
-	err := findAndMoveAndroidBuilds()
+	platform := os.Getenv(build_constants.Platform)
+	err := findAndMoveAndroidBuilds(platform)
 	if err != nil {
 		return err
 	}
-	err = findAndMoveIOSBuilds()
+	err = findAndMoveIOSBuilds(platform)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func findAndMoveAndroidBuilds() error {
-	apkFiles, err := findAndroidApks("build/app/outputs/apk")
+func findAndMoveAndroidBuilds(platform string) error {
+	if platform == "ios" {
+		print.Action("No Android builds were selected to build")
+		return nil
+	}
+
+	apkFiles, err := findAndroidApks(androidApkPath)
 	if err != nil {
 		return err
 	}
@@ -88,11 +98,14 @@ func findAndroidApks(root string) ([]string, error) {
 	return files, nil
 }
 
-func findAndMoveIOSBuilds() error {
-	productsPath := "build/ios_integ/Build/Products"
+func findAndMoveIOSBuilds(platform string) error {
+	if platform == "android" {
+		print.Action("No iOS builds were selected to build")
+		return nil
+	}
 
-	appPattern := filepath.Join(productsPath, "Release-iphoneos", "*.app")
-	testrunPattern := filepath.Join(productsPath, "*.xctestrun")
+	appPattern := filepath.Join(iosAppPath, "Release-iphoneos", "*.app")
+	testrunPattern := filepath.Join(iosAppPath, "*.xctestrun")
 
 	// Find .app files
 	appFiles, err := filepath.Glob(appPattern)

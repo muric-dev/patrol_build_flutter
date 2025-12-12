@@ -13,7 +13,7 @@ import (
 
 var patrolDoctor = commands.PatrolDoctor
 
-func GetCLIVersion() (*v.Version, error) {
+func GetPatrolCLIVersion() (*v.Version, error) {
 	output, err := exec.Command(patrolDoctor)
 	if err != nil {
 		return nil, err
