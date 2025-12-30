@@ -2,10 +2,10 @@ package main
 
 import (
 	build "patrol_install/steps/build"
-	export_artifacts "patrol_install/steps/export_artifacts"
-	install_patrol_cli "patrol_install/steps/install_patrol_cli"
-	validate "patrol_install/steps/validate"
-	print "patrol_install/utils/print"
+	"patrol_install/steps/export_artifacts"
+	"patrol_install/steps/install_patrol_cli"
+	"patrol_install/steps/validate"
+	"patrol_install/utils/print"
 )
 
 func main() {

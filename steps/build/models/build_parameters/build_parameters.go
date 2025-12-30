@@ -2,6 +2,8 @@ package build_parameters
 
 import (
 	"fmt"
+	"os"
+	build_constants "patrol_install/steps/build/constants"
 	"strings"
 )
 
@@ -56,14 +58,16 @@ func NewBuildParameters(envMap map[string]string) (*BuildParameters, error) {
 
 // Command constructs the final CLI command string based on the populated BuildParameters fields.
 func (bp *BuildParameters) Command() []string {
-	var args []string
+	platform := os.Getenv(build_constants.Platform)
+	buildType := os.Getenv(build_constants.BuildType)
+	isiOS := platform != "android"
+	isDebug := buildType == "debug"
+	isiOSSimulator := isiOS && isDebug
 
+	args := []string{}
 	if bp.Target != "" {
 		args = append(args, "--target", bp.Target)
 	}
-
-	args = append(args, "--"+bp.BuildType)
-
 	if bp.Tags != "" {
 		args = append(args, "--tags", bp.Tags)
 	}
@@ -74,16 +78,22 @@ func (bp *BuildParameters) Command() []string {
 		args = append(args, bp.IsVerbose)
 	}
 
+	buildTypeArg := "--" + bp.BuildType
+	if isiOSSimulator {
+		buildTypeArg += " --simulator"
+	}
+
+	buildCmd := func(platform, buildTypeArg string) string {
+		return "patrol build " + platform + " " + buildTypeArg + " " + strings.Join(args, " ")
+	}
+
 	if bp.Platform == "both" {
 		return []string{
-			"patrol build android " + strings.Join(args, " "),
-			"patrol build ios " + strings.Join(args, " "),
+			buildCmd("android", "--"+bp.BuildType),
+			buildCmd("ios", buildTypeArg),
 		}
 	}
 
-	var command = "patrol build " + bp.Platform + " " + strings.Join(args, " ")
-
-	return []string{
-		command,
-	}
+	cmd := buildCmd(bp.Platform, buildTypeArg)
+	return []string{cmd}
 }

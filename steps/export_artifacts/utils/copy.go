@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	print "patrol_install/utils/print"
+
+	"github.com/bitrise-io/go-steputils/tools"
 )
 
 // closeWithLog closes a file and logs an error if closing fails.
@@ -15,10 +17,13 @@ func closeWithLog(f io.Closer, name string) {
 	}
 }
 
-// CopyFilesToFolder copies each file in srcFiles to destFolder, preserving the base filename.
-// Returns an error if any copy fails. This is generic and can be used for APKs, IPAs, etc.
-func CopyFilesToFolder(srcFiles []string, destFolder string) error {
-	for _, srcFile := range srcFiles {
+// CopyFilesToFolder copies each file in srcFiles to destFolder, sets env variable for each file using envKeys.
+// Returns an error if any copy fails or if lengths do not match.
+func CopyFilesToFolder(srcFiles []string, destFolder string, envKeys []string) error {
+	if len(srcFiles) != len(envKeys) {
+		return fmt.Errorf("number of files (%d) does not match number of env keys (%d)", len(srcFiles), len(envKeys))
+	}
+	for i, srcFile := range srcFiles {
 		dst := filepath.Join(destFolder, filepath.Base(srcFile))
 		src, err := os.Open(srcFile)
 		if err != nil {
@@ -39,10 +44,17 @@ func CopyFilesToFolder(srcFiles []string, destFolder string) error {
 			closeWithLog(dstFile, dst)
 			return err
 		}
-		print.Success(fmt.Sprintf("Copied %s to %s", srcFile, dst))
+		print.Success(fmt.Sprintf("Copied to %s", dst))
 		// Close files explicitly to avoid too many open files in a loop
 		closeWithLog(src, srcFile)
 		closeWithLog(dstFile, dst)
+
+		if err := tools.ExportEnvironmentWithEnvman(envKeys[i], dst); err != nil {
+			print.Error(fmt.Sprintf("Error exporting env by Envman %s: %v", envKeys[i], err))
+			return err
+		}
+		print.Success(fmt.Sprintf("Artifact: %s exported into: %s \n", dst, envKeys[i]))
+
 	}
 	return nil
 }

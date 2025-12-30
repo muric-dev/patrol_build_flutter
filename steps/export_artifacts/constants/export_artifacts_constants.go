@@ -7,5 +7,10 @@ const (
 	DebugFolder          = "debug"
 	ReleaseFolder        = "release"
 	AndroidArtifactsPath = "patrol/android"
+
+	// Export names
+	InstrumentationPathEnvKey = "ANDROID_INSTRUMENTATION_APK_PATH"
+	ApkPathEnvKey             = "ANDROID_APK_PATH"
+
 	// iOS Related
 )

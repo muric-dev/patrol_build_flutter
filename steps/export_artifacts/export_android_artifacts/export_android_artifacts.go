@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
 	regex "patrol_install/constants"
 	build_constants "patrol_install/steps/build/constants"
 	constants "patrol_install/steps/export_artifacts/constants"
@@ -20,15 +21,19 @@ func CopyAndroidArtifacts(artifactsPath, testPath, appPath string) error {
 	}
 
 	apkFiles := make([]string, 0, 2)
+	apkExportKeys := make([]string, 0, 2)
+
 	if testApk, err := FindFirstApkInDir(testPath); err != nil {
 		return err
 	} else if testApk != "" {
 		apkFiles = append(apkFiles, testApk)
+		apkExportKeys = append(apkExportKeys, constants.InstrumentationPathEnvKey)
 	}
 	if appApk, err := FindFirstApkInDir(appPath); err != nil {
 		return err
 	} else if appApk != "" {
 		apkFiles = append(apkFiles, appApk)
+		apkExportKeys = append(apkExportKeys, constants.ApkPathEnvKey)
 	}
 
 	if len(apkFiles) == 0 {
@@ -40,7 +45,8 @@ func CopyAndroidArtifacts(artifactsPath, testPath, appPath string) error {
 		return err
 	}
 
-	if err := export_artifacts_utils.CopyFilesToFolder(apkFiles, artifactsPath); err != nil {
+	if err := export_artifacts_utils.CopyFilesToFolder(apkFiles, artifactsPath, apkExportKeys); err != nil {
+		print.Error("Error by copying")
 		return err
 	}
 

@@ -18,13 +18,19 @@ func TestCopyFilesToFolder(t *testing.T) {
 		t.Fatalf("failed to write file2: %v", err)
 	}
 	files := []string{file1, file2}
-	if err := CopyFilesToFolder(files, dstDir); err != nil {
+	envKeys := []string{"TEST_ENV_A", "TEST_ENV_B"}
+	if err := CopyFilesToFolder(files, dstDir, envKeys); err != nil {
 		t.Fatalf("CopyFilesToFolder failed: %v", err)
 	}
-	for _, f := range files {
+	for i, f := range files {
 		base := filepath.Base(f)
 		if _, err := os.Stat(filepath.Join(dstDir, base)); err != nil {
 			t.Errorf("file %s not copied", base)
+		}
+		// Check env variable is set
+		val := os.Getenv(envKeys[i])
+		if val == "" {
+			t.Errorf("env %s not set", envKeys[i])
 		}
 	}
 }
@@ -32,7 +38,17 @@ func TestCopyFilesToFolder(t *testing.T) {
 func TestCopyFilesToFolder_Error(t *testing.T) {
 	dstDir := t.TempDir()
 	files := []string{"/nonexistent/file.txt"}
-	if err := CopyFilesToFolder(files, dstDir); err == nil {
+	envKeys := []string{"DUMMY_ENV"}
+	if err := CopyFilesToFolder(files, dstDir, envKeys); err == nil {
 		t.Error("expected error for missing file")
+	}
+}
+
+func TestCopyFilesToFolder_LengthMismatch(t *testing.T) {
+	dstDir := t.TempDir()
+	files := []string{"/tmp/a.txt", "/tmp/b.txt"}
+	envKeys := []string{"ENV_A"} // Mismatch
+	if err := CopyFilesToFolder(files, dstDir, envKeys); err == nil {
+		t.Error("expected error for length mismatch")
 	}
 }

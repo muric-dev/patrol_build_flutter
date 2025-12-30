@@ -32,11 +32,11 @@ func SetTarget(bp *BuildParameters, value string) error {
 
 func SetBuildType(bp *BuildParameters, value string) error {
 	switch value {
-	case "release", "simulator":
+	case "release", "debug":
 		bp.BuildType = value
 		return nil
 	default:
-		return errors.New("invalid build type: expected 'release' or 'simulator'")
+		return errors.New("invalid build type: expected 'release' or 'debug'")
 	}
 }
 
