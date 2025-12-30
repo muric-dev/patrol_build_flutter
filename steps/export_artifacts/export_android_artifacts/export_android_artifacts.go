@@ -7,7 +7,6 @@ import (
 
 	regex "patrol_install/constants"
 	build_constants "patrol_install/steps/build/constants"
-	constants "patrol_install/steps/export_artifacts/constants"
 	export_artifacts_utils "patrol_install/steps/export_artifacts/utils"
 	print "patrol_install/utils/print"
 )
@@ -27,13 +26,13 @@ func CopyAndroidArtifacts(artifactsPath, testPath, appPath string) error {
 		return err
 	} else if testApk != "" {
 		apkFiles = append(apkFiles, testApk)
-		apkExportKeys = append(apkExportKeys, constants.InstrumentationPathEnvKey)
+		apkExportKeys = append(apkExportKeys, InstrumentationPathEnvKey)
 	}
 	if appApk, err := FindFirstApkInDir(appPath); err != nil {
 		return err
 	} else if appApk != "" {
 		apkFiles = append(apkFiles, appApk)
-		apkExportKeys = append(apkExportKeys, constants.ApkPathEnvKey)
+		apkExportKeys = append(apkExportKeys, ApkPathEnvKey)
 	}
 
 	if len(apkFiles) == 0 {
@@ -61,9 +60,9 @@ func IsAndroidPlatform(platform string) bool {
 // AndroidApkPaths returns the test and app APK search paths for the given build type.
 func AndroidApkPaths(isRelease bool) (testPath, appPath string) {
 	if isRelease {
-		return constants.AndroidTestPath + constants.ReleaseFolder, constants.AndroidAppPath + constants.ReleaseFolder
+		return AndroidTestPath + ReleaseFolder, AndroidAppPath + ReleaseFolder
 	}
-	return constants.AndroidTestPath + constants.DebugFolder, constants.AndroidAppPath + constants.DebugFolder
+	return AndroidTestPath + DebugFolder, AndroidAppPath + DebugFolder
 }
 
 // FindFirstApkInDir returns the first APK file found in the given directory, or an empty string if none found.
