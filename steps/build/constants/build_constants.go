@@ -8,4 +8,8 @@ const (
 	Tags                   = "TAGS"                      // optional, using empty string as default
 	ExcludedTags           = "EXCLUDED_TAGS"             // optional, using empty string as default
 	IsVerboseMode          = "IS_VERBOSE_MODE"           // optional, using false as default
+
+	PlatformAndroid = "android"
+	PlatformIOS     = "ios"
+	PlatformBoth    = "both"
 )

@@ -11,6 +11,13 @@ import (
 	print "patrol_install/utils/print"
 )
 
+// CopyAndroidArtifactsFromEnv derives paths from env and exports Android artifacts.
+func CopyAndroidArtifactsFromEnv() error {
+	isRelease := os.Getenv(build_constants.BuildType) == "release"
+	testPath, appPath := AndroidApkPaths(isRelease)
+	return CopyAndroidArtifacts(AndroidArtifactsPath, testPath, appPath)
+}
+
 // CopyAndroidArtifacts finds the first test and app APKs and copies them to the artifacts directory.
 func CopyAndroidArtifacts(artifactsPath, testPath, appPath string) error {
 	platform := os.Getenv(build_constants.Platform)
@@ -54,7 +61,7 @@ func CopyAndroidArtifacts(artifactsPath, testPath, appPath string) error {
 
 // IsAndroidPlatform returns true if the platform is Android.
 func IsAndroidPlatform(platform string) bool {
-	return platform == "android" || platform == "both"
+	return platform == build_constants.PlatformAndroid || platform == build_constants.PlatformBoth
 }
 
 // AndroidApkPaths returns the test and app APK search paths for the given build type.

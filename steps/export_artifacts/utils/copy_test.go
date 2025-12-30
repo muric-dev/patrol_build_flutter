@@ -83,3 +83,85 @@ func TestCopyFilesToFolder_LengthMismatch(t *testing.T) {
 		t.Error("expected error for length mismatch")
 	}
 }
+
+func TestCopyFilesToFolder_Directory(t *testing.T) {
+	// GIVEN a source directory with a file
+	stub := setupEnvExporterStub(t)
+	srcDir := t.TempDir()
+	nestedFile := filepath.Join(srcDir, "nested.txt")
+	if err := os.WriteFile(nestedFile, []byte("data"), 0644); err != nil {
+		t.Fatalf("failed to write nested file: %v", err)
+	}
+	dstDir := t.TempDir()
+
+	// WHEN copying the directory
+	envKey := "TEST_DIR_ENV"
+	if err := CopyFilesToFolder([]string{srcDir}, dstDir, []string{envKey}); err != nil {
+		t.Fatalf("CopyFilesToFolder failed: %v", err)
+	}
+
+	// THEN the directory and contents are copied and env exported
+	copiedDir := filepath.Join(dstDir, filepath.Base(srcDir))
+	if _, err := os.Stat(copiedDir); err != nil {
+		t.Fatalf("expected directory copied: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(copiedDir, "nested.txt")); err != nil {
+		t.Fatalf("expected nested file copied: %v", err)
+	}
+	if val := os.Getenv(envKey); val != copiedDir {
+		t.Fatalf("expected env %s=%s, got %s", envKey, copiedDir, val)
+	}
+	if exported, ok := stub.exported[envKey]; !ok || exported != copiedDir {
+		t.Fatalf("exporter expected %s=%s, got %s", envKey, copiedDir, exported)
+	}
+}
+
+func TestCopyFile(t *testing.T) {
+	// GIVEN a source file
+	srcDir := t.TempDir()
+	srcPath := filepath.Join(srcDir, "source.txt")
+	if err := os.WriteFile(srcPath, []byte("payload"), 0644); err != nil {
+		t.Fatalf("failed to write source file: %v", err)
+	}
+	dstDir := t.TempDir()
+	dstPath := filepath.Join(dstDir, "source.txt")
+
+	// WHEN copying the file
+	if err := copyFile(srcPath, dstPath, 0644); err != nil {
+		t.Fatalf("copyFile failed: %v", err)
+	}
+
+	// THEN contents are preserved
+	data, err := os.ReadFile(dstPath)
+	if err != nil {
+		t.Fatalf("failed to read dest file: %v", err)
+	}
+	if string(data) != "payload" {
+		t.Fatalf("expected payload, got %s", string(data))
+	}
+}
+
+func TestCopyDir(t *testing.T) {
+	// GIVEN a directory tree
+	srcDir := t.TempDir()
+	nestedDir := filepath.Join(srcDir, "nested")
+	if err := os.MkdirAll(nestedDir, 0755); err != nil {
+		t.Fatalf("failed to create nested dir: %v", err)
+	}
+	nestedFile := filepath.Join(nestedDir, "file.txt")
+	if err := os.WriteFile(nestedFile, []byte("content"), 0644); err != nil {
+		t.Fatalf("failed to write nested file: %v", err)
+	}
+	dstDir := t.TempDir()
+
+	// WHEN copying the directory
+	if err := copyDir(srcDir, filepath.Join(dstDir, "copied")); err != nil {
+		t.Fatalf("copyDir failed: %v", err)
+	}
+
+	// THEN the nested file exists in the destination
+	copiedFile := filepath.Join(dstDir, "copied", "nested", "file.txt")
+	if _, err := os.Stat(copiedFile); err != nil {
+		t.Fatalf("expected copied file, got error: %v", err)
+	}
+}

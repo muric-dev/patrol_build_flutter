@@ -23,29 +23,25 @@ func CopyFilesToFolder(srcFiles []string, destFolder string, envKeys []string) e
 	}
 	for i, srcFile := range srcFiles {
 		dst := filepath.Join(destFolder, filepath.Base(srcFile))
-		src, err := os.Open(srcFile)
+		info, err := os.Lstat(srcFile)
 		if err != nil {
 			print.Error(fmt.Sprintf("Error opening %s: %v", srcFile, err))
 			return err
 		}
 
-		dstFile, err := os.Create(dst)
-		if err != nil {
-			print.Error(fmt.Sprintf("Error creating %s: %v", dst, err))
-			closeWithLog(src, srcFile)
-			return err
+		if info.IsDir() {
+			if err := copyDir(srcFile, dst); err != nil {
+				print.Error(fmt.Sprintf("Error copying directory %s to %s: %v", srcFile, dst, err))
+				return err
+			}
+		} else {
+			if err := copyFile(srcFile, dst, info.Mode()); err != nil {
+				print.Error(fmt.Sprintf("Error copying %s to %s: %v", srcFile, dst, err))
+				return err
+			}
 		}
 
-		if _, err := io.Copy(dstFile, src); err != nil {
-			print.Error(fmt.Sprintf("Error copying %s to %s: %v", srcFile, dst, err))
-			closeWithLog(src, srcFile)
-			closeWithLog(dstFile, dst)
-			return err
-		}
 		print.Success(fmt.Sprintf("Copied to %s", dst))
-		// Close files explicitly to avoid too many open files in a loop
-		closeWithLog(src, srcFile)
-		closeWithLog(dstFile, dst)
 
 		if err := exportEnv(envKeys[i], dst); err != nil {
 			print.Error(fmt.Sprintf("Error exporting env by Envman %s: %v", envKeys[i], err))
@@ -55,4 +51,63 @@ func CopyFilesToFolder(srcFiles []string, destFolder string, envKeys []string) e
 
 	}
 	return nil
+}
+
+func copyFile(srcPath, dstPath string, mode os.FileMode) error {
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+
+	dstFile, err := os.OpenFile(dstPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode.Perm())
+	if err != nil {
+		closeWithLog(src, srcPath)
+		return err
+	}
+
+	if _, err := io.Copy(dstFile, src); err != nil {
+		closeWithLog(src, srcPath)
+		closeWithLog(dstFile, dstPath)
+		return err
+	}
+
+	closeWithLog(src, srcPath)
+	closeWithLog(dstFile, dstPath)
+
+	if err := os.Chmod(dstPath, mode.Perm()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func copyDir(srcDir, dstDir string) error {
+	return filepath.WalkDir(srcDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(srcDir, path)
+		if err != nil {
+			return err
+		}
+		dstPath := filepath.Join(dstDir, rel)
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return os.MkdirAll(dstPath, info.Mode().Perm())
+		}
+
+		if d.Type()&os.ModeSymlink != 0 {
+			target, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			return os.Symlink(target, dstPath)
+		}
+
+		return copyFile(path, dstPath, info.Mode())
+	})
 }
